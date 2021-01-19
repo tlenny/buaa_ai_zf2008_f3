@@ -51,7 +51,7 @@ async def pred(request: Request):
     # pyplot.show()
     num = int(np.argmax(rst))
     url = str(request.url)
-    url = url[0:url.find("ai/predict")] + file_name
+    url = url[0:url.find("api/predict")] + file_name
     return {"img": url, "result": num}
 
 
