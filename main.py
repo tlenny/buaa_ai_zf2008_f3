@@ -44,6 +44,31 @@ async def pred(request: Request):
     )
     # pyplot.show()
     num = int(np.argmax(rst))
+    url = str(request.url)
+    url = url[0:url.find("ai/predict")] + file_name
+    return {"img": url, "result": num}
+
+
+@app.get(BASE_PATH + "/predict_test")
+async def pred_test(request: Request):
+    mnist_test = pd.read_csv('mnist_test.csv')
+    data_no = random.randint(0, 9999)
+    im = mnist_test.iloc[data_no:data_no + 1, 1:]
+    print(im.shape)
+    image = im.values.reshape(28, 28)
+    pyplot.imshow(image)
+    file_name = 'static/images/number%s.jpg' % data_no;
+    pyplot.savefig(file_name)
+
+    model = load_model()
+    input = mnist_test.iloc[data_no:data_no + 1, 1:]
+    rst = model.predict(
+        input, batch_size=None, verbose=0, steps=None, callbacks=None,
+        max_queue_size=10,
+        workers=1, use_multiprocessing=False
+    )
+    # pyplot.show()
+    num = int(np.argmax(rst))
     # return {"img": file_name, "result": num}
     return templates.TemplateResponse("predict.html", {"request": request, "img": "/" + file_name, "result": num})
 
