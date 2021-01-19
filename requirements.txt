@@ -1,9 +1,11 @@
 fastapi==0.63.0
 uvicorn==0.13.2
 aiofiles==0.6.0
-pydantic~=1.7.3
-starlette~=0.13.8
+pydantic==1.7.3
+starlette==0.13.6
 tensorflow==2.4.0
 matplotlib==3.3.3
 numpy==1.19.5
 pandas==1.2.0
+jinja2==2.11.2
+aiofiles==0.6.0

@@ -1,17 +1,22 @@
-import tensorflow as tf
-import matplotlib.pyplot as pyplot
-import pandas as pd
-import os as os
-import numpy as np
+import os
 import random
+import shutil
 
+import matplotlib.pyplot as pyplot
+import numpy as np
+import pandas as pd
+import tensorflow as tf
 import uvicorn
-from fastapi import FastAPI
-from starlette.staticfiles import StaticFiles
+from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 BASE_PATH = "/ai"
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# 创建一个templates（模板）对象，以后可以重用。
+templates = Jinja2Templates(directory="templates")
 
 
 @app.get(BASE_PATH)
@@ -20,14 +25,14 @@ async def root():
 
 
 @app.get(BASE_PATH + "/predict")
-async def pred():
+async def pred(request: Request):
     mnist_test = pd.read_csv('mnist_test.csv')
     data_no = random.randint(0, 9999)
     im = mnist_test.iloc[data_no:data_no + 1, 1:]
     print(im.shape)
     image = im.values.reshape(28, 28)
     pyplot.imshow(image)
-    file_name = 'static/number%s.jpg' % data_no;
+    file_name = 'static/images/number%s.jpg' % data_no;
     pyplot.savefig(file_name)
 
     model = load_model()
@@ -39,7 +44,8 @@ async def pred():
     )
     # pyplot.show()
     num = int(np.argmax(rst))
-    return {"img": file_name, "result": num}
+    # return {"img": file_name, "result": num}
+    return templates.TemplateResponse("predict.html", {"request": request, "img": "/" + file_name, "result": num})
 
 
 @app.get(BASE_PATH + "/train")
@@ -164,11 +170,15 @@ def predict(data_no):
 
 
 if __name__ == "__main__":
+    print('remove test pics')
+    # 删除临时文件夹
+    shutil.rmtree("static/images", True)
+    # 创建文件
+    os.mkdir("static/images")
     print('run main')
     # showNumber(61)
     # train()
     # evaluate()
     # no = random.randint(0, 9999)
     # predict(no)
-
     uvicorn.run(app, host="0.0.0.0", port=9090)

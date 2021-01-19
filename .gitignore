@@ -149,6 +149,6 @@ bin
 /mina-service/allure-report/
 /mina-service/report/
 
-static/*.jpg
+static/images/*.jpg
 training_model
 *.csv
