@@ -50,8 +50,9 @@ async def pred(request: Request):
     )
     # pyplot.show()
     num = int(np.argmax(rst))
-    url = str(request.url)
-    url = url[0:url.find("api/predict")] + file_name
+    url = "http://49.233.214.188:9090/" + file_name
+    # url = str(request.url)
+    # url = url[0:url.find("api/predict")] + file_name
     return {"img": url, "result": num}
 
 
