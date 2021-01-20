@@ -2,12 +2,15 @@ import os
 import random
 import shutil
 
+# import Image
+from PIL import Image
+
 import matplotlib.pyplot as pyplot
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, File, UploadFile
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -221,6 +224,8 @@ def predict(data_no):
 
     model = load_model()
     input = mnist_test.iloc[data_no:data_no + 1, 1:]
+    print(input)
+    print(input.shape)
     rst = model.predict(
         input, batch_size=None, verbose=0, steps=None, callbacks=None,
         max_queue_size=10,
@@ -231,6 +236,56 @@ def predict(data_no):
     print(np.argmax(rst))
     num = int(np.argmax(rst))
     print('识别结果:%s' % num)
+
+def predict_img(img_file_name):
+    im = Image.open(img_file_name)
+    im_a = im.resize((28, 28),Image.ANTIALIAS)
+    # im_a.save('static/tmp7.png')
+    px = im_a.load()
+    img_pix = np.zeros([28 * 28, 3], dtype = int)
+    for i in range(28):
+        for j in range(28):
+            rgb = px[i, j]
+            img_pix[i + 28 * j] = [rgb[0],rgb[1],rgb[2]]
+
+    mean = np.mean(img_pix, axis=0)
+    mean = np.round(mean)
+    mean = mean.astype(int)
+
+    pix = np.zeros([1, 28 * 28], dtype = int)
+    for i in range(28 * 28):
+        rgb = np.sum(np.absolute(img_pix[i] - mean))
+        rgb = int(np.round(rgb))
+        if rgb > 255:
+            rgb = 255
+        pix[0, i] = rgb
+
+    model = load_model()
+    input = pix
+    rst = model.predict(
+        input, batch_size=None, verbose=0, steps=None, callbacks=None,
+        max_queue_size=10,
+        workers=1, use_multiprocessing=False
+    )
+    num = int(np.argmax(rst))
+    print('识别结果:%s' % num)
+
+    # image = input.reshape(28, 28)
+    # pyplot.imshow(image)
+    # # pyplot.savefig('static/number%s.jpg' % data_no)
+    # pyplot.show()
+    return num
+
+@app.post("/api/predict_file")
+async def file_upload(file: UploadFile = File(...)):
+    res = await file.read()
+    file_name = 'static/images/%s' % file.filename;
+    with open(file_name, "wb") as f:
+        f.write(res)
+    num = predict_img(file_name)
+
+    url = "http://49.233.214.188:9090/" + file_name
+    return {"img": url, "result": num}
 
 
 if __name__ == "__main__":
@@ -246,3 +301,4 @@ if __name__ == "__main__":
     # no = random.randint(0, 9999)
     # predict(no)
     uvicorn.run(app, host="0.0.0.0", port=9090)
+    # predict_img('static/num8.png')
