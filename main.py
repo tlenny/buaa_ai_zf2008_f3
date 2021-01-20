@@ -279,7 +279,7 @@ def predict_img(img_file_name):
 @app.post("/api/predict_file")
 async def file_upload(file: UploadFile = File(...)):
     res = await file.read()
-    file_name = 'static/images/%s' % file.filename;
+    file_name = 'static/images/%s' % file.filename
     with open(file_name, "wb") as f:
         f.write(res)
     num = predict_img(file_name)
