@@ -237,6 +237,7 @@ def predict(data_no):
     num = int(np.argmax(rst))
     print('识别结果:%s' % num)
 
+
 def predict_img(img_file_name):
     im = Image.open(img_file_name)
     im_a = im.resize((28, 28),Image.ANTIALIAS)
@@ -275,6 +276,7 @@ def predict_img(img_file_name):
     # # pyplot.savefig('static/number%s.jpg' % data_no)
     # pyplot.show()
     return num
+
 
 @app.post("/api/predict_file")
 async def file_upload(file: UploadFile = File(...)):
